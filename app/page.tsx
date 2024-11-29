@@ -14,7 +14,7 @@ export default function VapiDarkAuraAssistant() {
   const [transcript, setTranscript] = useState<string>("");
   const [isCallActive, setIsCallActive] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
-  const [response, setResponse] = useState<string>("");
+  const [response, _setResponse] = useState<string>("");
 
   const startCall = async () => {
     try {

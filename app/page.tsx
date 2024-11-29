@@ -1,101 +1,138 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { useVapi } from './VapiProvider';
+
+// Define message types for type safety
+interface FunctionCallMessage {
+  type: 'function-call';
+  functionCall: {
+    name: string;
+    parameters: Record<string, string>;
+  };
+}
+
+interface TranscriptMessage {
+  type: 'transcript';
+  text: string;
+  transcriptType: 'partial' | 'final';
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  // Use the Vapi instance from context
+  const vapi = useVapi(); 
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  // State management
+  const [toppings, setToppings] = useState<string[]>([]);
+  const [status, setStatus] = useState<string>('Waiting to start...');
+  const [transcript, setTranscript] = useState<string>('');
+  const [isCallActive, setIsCallActive] = useState<boolean>(false);
+
+  // Start call handler
+  const startCall = async () => {
+    try {
+      setStatus('Starting call...');
+      await vapi.start('0036146f-a3ec-4213-995a-4945cff7cfb8');
+      setStatus('Call started. Listening...');
+      setIsCallActive(true);
+    } catch (err) {
+      console.error(err);
+      setStatus('Error starting call.');
+      setIsCallActive(false);
+    }
+  };
+
+  // Stop call handler
+  const stopCall = async () => {
+    try {
+      setStatus('Ending call...');
+      await vapi.stop();
+      setStatus('Call ended.');
+      setIsCallActive(false);
+      setTranscript('');
+    } catch (err) {
+      console.error(err);
+      setStatus('Error ending call.');
+    }
+  };
+
+  // Message event handler
+  vapi.on('message', (msg: FunctionCallMessage | TranscriptMessage) => {
+    if (msg.type === 'transcript') {
+      if (msg.transcriptType === 'partial') {
+        setTranscript(msg.text);
+      } else if (msg.transcriptType === 'final') {
+        setTranscript('');
+      }
+    } else if (msg.type === 'function-call') {
+      if (msg.functionCall.name === 'addTopping') {
+        const { topping } = msg.functionCall.parameters;
+        setToppings((prev) => [...prev, topping]);
+      } else if (msg.functionCall.name === 'goToCheckout') {
+        window.location.href = '/checkout';
+      }
+    }
+  });
+
+  return (
+    <main className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg">
+      <h1 className="text-2xl font-bold mb-4 text-center">Pizza Ordering Assistant</h1>
+      
+      <div className="flex justify-center space-x-4 mb-4">
+        <button 
+          onClick={startCall} 
+          disabled={isCallActive}
+          className={`px-4 py-2 rounded ${
+            isCallActive 
+              ? 'bg-gray-300 cursor-not-allowed' 
+              : 'bg-green-500 text-white hover:bg-green-600'
+          }`}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Start Call
+        </button>
+        <button 
+          onClick={stopCall}
+          disabled={!isCallActive}
+          className={`px-4 py-2 rounded ${
+            !isCallActive 
+              ? 'bg-gray-300 cursor-not-allowed' 
+              : 'bg-red-500 text-white hover:bg-red-600'
+          }`}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          Stop Call
+        </button>
+      </div>
+
+      <div className="bg-gray-100 p-4 rounded mb-4">
+        <p className="font-semibold">Status: 
+          <span className={`ml-2 ${
+            status.includes('Error') 
+              ? 'text-red-500' 
+              : status.includes('started') 
+                ? 'text-green-500' 
+                : 'text-gray-500'
+          }`}>
+            {status}
+          </span>
+        </p>
+        {transcript && (
+          <p className="mt-2 italic text-gray-700">
+            Live Transcript: {transcript}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Toppings:</h2>
+        {toppings.length > 0 ? (
+          <ul className="list-disc list-inside">
+            {toppings.map((topping, index) => (
+              <li key={index} className="text-gray-700">{topping}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500">No toppings selected yet</p>
+        )}
+      </div>
+    </main>
   );
 }

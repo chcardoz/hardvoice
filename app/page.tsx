@@ -253,8 +253,10 @@ export default function HomeDepotVoiceAssistant() {
                   <span>End Conversation</span>
                 </button>
               )}
+              
             </div>
           </div>
+          <div className="mb-16" />
         </div>
 
         {/* Footer */}
@@ -327,6 +329,15 @@ export default function HomeDepotVoiceAssistant() {
           </div>
         </div>
       )}
+      
+      <div className="absolute bottom-0 left-0 right-0 bg-gray-100 p-4 text-center z-40 mt-4">
+        <a href="https://github.com/chcardoz/hardvoice/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center text-sm text-gray-600">
+          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.54 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.83-.01-1.5-2.24.49-2.71-1.08-2.71-1.08-.36-.91-.88-1.15-.88-1.15-.72-.49.05-.48.05-.48.8.06 1.22.82 1.22.82.71 1.22 1.86.87 2.31.66.07-.51.28-.87.51-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.66 7.66 0 018 3.5c.68 0 1.36.09 2 .26 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.14 0 3.06-1.87 3.75-3.65 3.95.29.25.55.74.55 1.49 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38C13.71 14.54 16 11.54 16 8c0-4.42-3.58-8-8-8z" />
+          </svg>
+          GitHub Repository
+        </a>
+      </div>
     </div>
   );
 }

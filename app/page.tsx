@@ -74,7 +74,7 @@ export default function HomeDepotVoiceAssistant() {
             {status}
           </p>
           {transcript && (
-            <p className="mt-2 text-gray-600 italic">"{transcript}"</p>
+            <p className="mt-2 text-gray-600 italic">&ldquo;{transcript}&rdquo;</p>
           )}
         </div>
 

@@ -53,7 +53,7 @@ export default function HomeDepotVoiceAssistant() {
   useEffect(() => {
     if (!vapi) return;
 
-    const handleTranscript = (transcript: any) => {
+    const handleTranscript = (transcript: Message) => {
       console.log('Transcript event:', transcript);
       
       // Handle user transcripts
@@ -75,7 +75,7 @@ export default function HomeDepotVoiceAssistant() {
       }
     };
 
-    const handleMessage = (message: any) => {
+    const handleMessage = (message: { type: string; role: string; transcript?: string; transcriptType?: string; text?: string; status?: string; }) => {
       console.log('Message event:', message);
       
       // Handle different message types
